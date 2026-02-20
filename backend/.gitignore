@@ -1,0 +1,25 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.sln.docstates
+.vs/
+bin/
+obj/
+appsettings.Development.json
+appsettings.local.json
+.env
+.env.local
+*.db
+*.mdf
+*.ldf
+.vscode/
+.DS_Store
+node_modules/
+dist/
+coverage/

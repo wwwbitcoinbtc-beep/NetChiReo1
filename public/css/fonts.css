@@ -1,0 +1,112 @@
+/* Local font definitions for offline usage - No CDN Required */
+
+/* Fallback fonts for system compatibility */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Vazirmatn'), local('Vazirmatn-Regular'), 
+    url('/fonts/vazirmatn-400.woff2') format('woff2'),
+    url('/fonts/vazirmatn-400.ttf') format('truetype');
+  unicode-range: U+0600-U+06FF; /* Persian characters */
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 600;
+  src: local('Vazirmatn SemiBold'), local('Vazirmatn-SemiBold'),
+    url('/fonts/vazirmatn-600.woff2') format('woff2'),
+    url('/fonts/vazirmatn-600.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Vazirmatn Bold'), local('Vazirmatn-Bold'),
+    url('/fonts/vazirmatn-700.woff2') format('woff2'),
+    url('/fonts/vazirmatn-700.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 900;
+  src: local('Vazirmatn Black'), local('Vazirmatn-Black'),
+    url('/fonts/vazirmatn-900.woff2') format('woff2'),
+    url('/fonts/vazirmatn-900.ttf') format('truetype');
+}
+
+/* Latin fonts for fallback */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto'), local('Roboto-Regular'),
+    url('/fonts/roboto-400.woff2') format('woff2'),
+    url('/fonts/roboto-400.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Roboto Medium'), local('Roboto-Medium'),
+    url('/fonts/roboto-500.woff2') format('woff2'),
+    url('/fonts/roboto-500.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Roboto Bold'), local('Roboto-Bold'),
+    url('/fonts/roboto-700.woff2') format('woff2'),
+    url('/fonts/roboto-700.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100;
+  src: local('Inter Thin'),
+    url('/fonts/inter-100.woff2') format('woff2'),
+    url('/fonts/inter-100.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Inter'), local('Inter-Regular'),
+    url('/fonts/inter-400.woff2') format('woff2'),
+    url('/fonts/inter-400.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  src: local('Inter SemiBold'), local('Inter-SemiBold'),
+    url('/fonts/inter-600.woff2') format('woff2'),
+    url('/fonts/inter-600.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Inter Bold'), local('Inter-Bold'),
+    url('/fonts/inter-700.woff2') format('woff2'),
+    url('/fonts/inter-700.ttf') format('truetype');
+}
+
+/* Monospace font for code blocks */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto Mono'), local('RobotoMono-Regular'),
+    url('/fonts/roboto-mono-400.woff2') format('woff2');
+}

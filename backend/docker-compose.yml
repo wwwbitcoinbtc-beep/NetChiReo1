@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: netchi_sqlserver
+    environment:
+      SA_PASSWORD: "NetChi@2024"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - netchi_network
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "NetChi@2024" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Uncomment below to add the API container when ready
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: src/NetChi.Api/Dockerfile
+  #   container_name: netchi_api
+  #   depends_on:
+  #     mssql:
+  #       condition: service_healthy
+  #   environment:
+  #     ConnectionStrings__DefaultConnection: "Server=mssql,1433;Database=NetChiDb;User Id=sa;Password=NetChi@2024;Encrypt=false;"
+  #   ports:
+  #     - "5001:5001"
+  #   networks:
+  #     - netchi_network
+
+networks:
+  netchi_network:
+    driver: bridge
+
+volumes:
+  mssql_data:

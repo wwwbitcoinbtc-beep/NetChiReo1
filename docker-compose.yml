@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: netchi-sqlserver
+    environment:
+      SA_PASSWORD: "NetChi@2024"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - netchi-network
+    restart: unless-stopped
+
+  # NetChi Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: netchi-backend
+    depends_on:
+      - sqlserver
+    environment:
+      ASPNETCORE_URLS: "http://+:5232"
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=NetChiDb;User Id=sa;Password=NetChi@2024;Encrypt=false;TrustServerCertificate=true;"
+      Jwt__Key: "YourSuperSecretKeyForJwtTokenGenerationThatIsAtLeast32CharactersLong"
+      Jwt__Issuer: "NetChi"
+      Jwt__Audience: "NetChiClient"
+      AllowedOrigins: "http://localhost:3000,http://localhost:3001,http://frontend:3000,http://127.0.0.1:3000"
+    ports:
+      - "5232:5232"
+    volumes:
+      - backend_build:/app
+    networks:
+      - netchi-network
+    restart: unless-stopped
+
+  # NetChi Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: netchi-frontend
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: "http://backend:5232"
+      VITE_SIGNALR_URL: "http://backend:5232"
+    ports:
+      - "3000:3000"
+    volumes:
+      - frontend_build:/app/node_modules
+    networks:
+      - netchi-network
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+    driver: local
+  backend_build:
+    driver: local
+  frontend_build:
+    driver: local
+
+networks:
+  netchi-network:
+    driver: bridge

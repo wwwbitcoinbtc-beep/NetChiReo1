@@ -1,0 +1,39 @@
+# NetChi Frontend - Multistage Build
+# Stage 1: Build
+FROM node:20-alpine as builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the app
+RUN npm run build
+
+# Stage 2: Runtime (Serve production build)
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install serve to run production build
+RUN npm install -g serve
+
+# Copy built app from builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/public ./public
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+# Start server serving dist folder
+CMD ["serve", "-s", "dist", "-l", "3000"]

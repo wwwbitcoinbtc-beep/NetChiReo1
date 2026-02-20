@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NetChi.Api/NetChi.Api.csproj" />
+    <Project Path="src/NetChi.Application/NetChi.Application.csproj" />
+    <Project Path="src/NetChi.Domain/NetChi.Domain.csproj" />
+    <Project Path="src/NetChi.Infrastructure/NetChi.Infrastructure.csproj" />
+    <Project Path="src/NetChi.Shared/NetChi.Shared.csproj" />
+  </Folder>
+</Solution>
