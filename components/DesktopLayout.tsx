@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppView, UserRole } from '../types';
-import { Home, User, Zap, Bell, Search, Users } from 'lucide-react';
+import { Home, User, Zap, Bell, Search, Users, Palette, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Props {
@@ -14,6 +14,8 @@ export const DesktopLayout: React.FC<Props> = ({ currentView, onChangeView, user
   const menuItems = [
     { id: AppView.HOME, icon: Home, label: 'داشبورد' },
     { id: AppView.PROFILE, icon: User, label: 'پروفایل کاربری' },
+    { id: AppView.ORDERS, icon: ShoppingCart, label: 'سفارشات' },
+    { id: AppView.DESIGN, icon: Palette, label: 'سیستم طراحی' },
   ];
 
   // Add "Users Management" only for Providers

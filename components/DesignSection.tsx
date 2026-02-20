@@ -90,13 +90,14 @@ export const DesignSection: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 space-y-8">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center space-y-3"
-      >
+    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 py-8">
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-3"
+        >
         <div className="flex items-center justify-center gap-3">
           <Palette className="w-8 h-8 text-blue-600" />
           <h1 className="text-4xl font-black text-slate-900">سیستم طراحی</h1>
@@ -293,6 +294,7 @@ export const DesignSection: React.FC = () => {
           ✓ تمام منابع طراحی به صورت آفلاین و مستقل بارگذاری شده‌اند
         </p>
       </motion.div>
+      </div>
     </div>
   );
 };

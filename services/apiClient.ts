@@ -139,21 +139,42 @@ export class ApiClient {
    * Get Orders
    */
   static getOrders() {
-    return this.get('/orders');
+    return this.get('/v1/orders');
   }
 
   /**
    * Get Order by ID
    */
-  static getOrder(id: number) {
-    return this.get(`/orders/${id}`);
+  static getOrder(id: string) {
+    return this.get(`/v1/orders/${id}`);
+  }
+
+  /**
+   * Get User Orders
+   */
+  static getUserOrders(userId: string) {
+    return this.get(`/v1/orders/user/${userId}`);
   }
 
   /**
    * Create Order
    */
   static createOrder(order: unknown) {
-    return this.post('/orders', order);
+    return this.post('/v1/orders', order);
+  }
+
+  /**
+   * Update Order
+   */
+  static updateOrder(id: string, order: unknown) {
+    return this.put(`/v1/orders/${id}`, order);
+  }
+
+  /**
+   * Delete Order
+   */
+  static deleteOrder(id: string) {
+    return this.delete(`/v1/orders/${id}`);
   }
 
   /**
