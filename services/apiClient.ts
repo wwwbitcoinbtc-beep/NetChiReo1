@@ -178,6 +178,13 @@ export class ApiClient {
   }
 
   /**
+   * Get Design System Assets
+   */
+  static getDesignSystem() {
+    return this.get('/v1/design/system');
+  }
+
+  /**
    * Health Check
    */
   static healthCheck() {

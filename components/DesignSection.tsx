@@ -1,18 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Palette, Copy, Download, Eye, Settings } from 'lucide-react';
+import { Palette, Copy, Download, Eye, Settings, AlertCircle, Loader } from 'lucide-react';
+import ApiClient from '../services/apiClient';
 
 interface DesignAsset {
   id: string;
   name: string;
-  type: 'color' | 'typography' | 'component';
-  value: string;
-  code: string;
+  type?: 'color' | 'typography' | 'component';
+  value?: string;
+  code?: string;
+  hex?: string;
+  tailwind?: string;
 }
 
 export const DesignSection: React.FC = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [designSystem, setDesignSystem] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch design system from backend
+  useEffect(() => {
+    const fetchDesignSystem = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await ApiClient.getDesignSystem();
+        setDesignSystem(response);
+      } catch (err: any) {
+        setError(err.message || 'خطا در بارگذاری سیستم طراحی. لطفا Backend را بررسی کنید.');
+        console.error('Design system error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDesignSystem();
+  }, []);
+
+  // Fallback design assets if API fails
   const designAssets: DesignAsset[] = [
     // Colors
     {
@@ -92,6 +117,42 @@ export const DesignSection: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 py-8">
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        {/* Error Alert - Backend Connection Required */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-2xl flex items-center gap-3"
+          >
+            <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
+            <div>
+              <p className="font-bold text-red-800">خطا در اتصال به Backend</p>
+              <p className="text-sm text-red-700 mt-1">{error}</p>
+              <p className="text-xs text-red-600 mt-2">🔌 مطمئن شوید Backend در حال اجراست: <code className="bg-red-100 px-2 py-1 rounded">dotnet run</code></p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-20 gap-4"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full"
+            />
+            <p className="text-slate-600 font-medium">درحال بارگذاری سیستم طراحی...</p>
+          </motion.div>
+        )}
+
+        {/* Content - Only show if loaded and no error */}
+        {!loading && !error && (
+        <>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -283,20 +344,23 @@ export const DesignSection: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Offline Status */}
+      {/* Backend Status */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="p-4 bg-green-50 border border-green-200 rounded-xl text-center"
+        className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-center"
       >
-        <p className="text-green-800 font-medium">
-          ✓ تمام منابع طراحی به صورت آفلاین و مستقل بارگذاری شده‌اند
+        <p className="text-blue-800 font-medium">
+          ✓ سیستم طراحی از Backend بارگذاری شد
         </p>
       </motion.div>
+        </>
+        )}
       </div>
     </div>
   );
 };
 
 export default DesignSection;
+
