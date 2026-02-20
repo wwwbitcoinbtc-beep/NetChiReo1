@@ -11,26 +11,23 @@ export const ProfileSection: React.FC<Props> = ({ onLogout }) => {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // توضیح: اگر API endpoint برای Get Current User وجود داشت:
-    // const fetchUser = async () => {
-    //   try {
-    //     const userData = await ApiClient.get('/v1/users/me');
-    //     setUser(userData);
-    //   } catch (error) {
-    //     console.error('Failed to fetch user:', error);
-    //   }
-    // };
-    // fetchUser();
-    
-    // برای حالا، صرفاً یک پیام نمایش دهید
-    setUser({ 
-      name: 'کاربر نت‌چی', 
-      userName: 'user',
-      email: 'user@netchireo.com',
-      type: 'CUSTOMER',
-      phone: '+98 XXX XXXX',
-      joinDate: new Date().toLocaleDateString('fa-IR')
-    });
+    // Load user from localStorage (saved after login)
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setUser({
+          name: userData.userName || 'کاربر نت‌چی',
+          userName: userData.userName || 'user',
+          email: userData.email || 'user@netchireo.com',
+          type: userData.type || 'CUSTOMER',
+          phone: '+98 XXX XXXX',
+          joinDate: new Date().toLocaleDateString('fa-IR')
+        });
+      } catch (error) {
+        console.error('Failed to parse user from localStorage:', error);
+      }
+    }
   }, []);
 
   // Fallback if no user found (shouldn't happen in authenticated state)
@@ -96,6 +93,7 @@ export const ProfileSection: React.FC<Props> = ({ onLogout }) => {
         <button 
             onClick={() => {
                 ApiClient.logout(); // Clear token from apiClient
+                localStorage.removeItem('user'); // Clear user from localStorage
                 onLogout();
             }}
             className="w-full mt-8 p-4 rounded-2xl border-2 border-red-100 text-red-500 font-bold flex items-center justify-center gap-2 hover:bg-red-50 transition-colors"

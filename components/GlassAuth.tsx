@@ -89,49 +89,6 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
       };
   };
 
-  const handleRegister = () => {
-      if (!fullName || !username || !email || !phone || !password) {
-          showToast('لطفا تمام فیلدها را پر کنید.');
-          return;
-      }
-      
-      // Basic length check for username
-      if (username.length < 3) {
-          showToast('نام کاربری باید حداقل ۳ کاراکتر باشد.');
-          return;
-      }
-
-      if (phone.length < 10) {
-          showToast('شماره موبایل معتبر نیست.');
-          return;
-      }
-
-      // Strict Password Validation
-      const strength = checkPasswordStrength(password);
-      if (!Object.values(strength).every(Boolean)) {
-          showToast('رمز عبور به اندازه کافی قوی نیست. لطفا موارد ذکر شده را رعایت کنید.', 'error');
-          return;
-      }
-
-      // ** CHECK DUPLICATES IN LOCAL STORAGE **
-      const existingUsers = getUsers();
-      if (existingUsers.find(u => u.username === username)) {
-          showToast('این نام کاربری قبلا گرفته شده است.', 'error');
-          return;
-      }
-      if (existingUsers.find(u => u.phone === phone)) {
-          showToast('این شماره موبایل قبلا ثبت نام کرده است.', 'error');
-          return;
-      }
-      
-      // Proceed to OTP for verification
-      const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedOtp(randomCode);
-      setStep('otp_verify');
-      setTimeLeft(90);
-      setOtpInput('');
-  };
-
   const handleLoginRequest = async () => {
       if (!loginIdentifier || !loginPassword) {
           showToast('لطفا ایمیل و رمز عبور را وارد کنید.', 'error');
@@ -146,6 +103,14 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
           });
 
           if (response.token) {
+              // Save user info to localStorage
+              localStorage.setItem('user', JSON.stringify({
+                  id: response.user.id,
+                  email: response.user.email,
+                  userName: response.user.userName,
+                  type: response.user.type
+              }));
+              
               const userRole = response.user.type === 'PROVIDER' ? UserRole.PROVIDER : UserRole.CUSTOMER;
               showToast(`خوش آمدید ${response.user.userName}!`, 'success');
               
@@ -179,6 +144,14 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
           });
 
           if (response.token) {
+              // Save user info to localStorage
+              localStorage.setItem('user', JSON.stringify({
+                  id: response.user.id,
+                  email: response.user.email,
+                  userName: response.user.userName,
+                  type: response.user.type
+              }));
+              
               const userRole = response.user.type === 'PROVIDER' ? UserRole.PROVIDER : UserRole.CUSTOMER;
               showToast(`حساب کاربری ${response.user.email} ایجاد شد!`, 'success');
               

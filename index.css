@@ -5,15 +5,24 @@
 /* Custom Glass Effect */
 @layer components {
   .bg-glass {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   .shadow-glass {
-    @apply shadow-lg;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 
   .glass-button {
-    @apply bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 transition-all duration-300;
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .glass-button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
   }
 }
 

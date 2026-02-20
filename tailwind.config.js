@@ -48,6 +48,19 @@ export default {
         sans: ["Vazirmatn", "sans-serif"],
       },
     },
+    // Ensure opacity modifiers work properly
+    opacity: {
+      0: '0',
+      5: '0.05',
+      10: '0.1',
+      15: '0.15',
+      20: '0.2',
+      25: '0.25',
+      50: '0.5',
+      75: '0.75',
+      90: '0.9',
+      100: '1',
+    },
   },
   plugins: [],
 }
