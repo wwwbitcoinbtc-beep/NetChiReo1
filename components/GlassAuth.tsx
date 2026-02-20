@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserRole } from '../types';
 import { Smartphone, Lock, ArrowRight, CheckCircle2, Clock, User, UserPlus, LogIn, Mail, Key, ShieldAlert, X, Eye, EyeOff, Check } from 'lucide-react';
+import ApiClient from '../services/apiClient';
 
 interface Props {
   onLogin: (role: UserRole) => void;
@@ -58,23 +59,6 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
       setToast({ msg, type });
       setTimeout(() => setToast(null), 4000);
   };
-
-  // --- LOCAL STORAGE HELPERS ---
-  const getUsers = (): any[] => {
-    const users = localStorage.getItem('netchi_users');
-    return users ? JSON.parse(users) : [];
-  };
-
-  const saveUserToStorage = (user: any) => {
-    const users = getUsers();
-    users.push(user);
-    localStorage.setItem('netchi_users', JSON.stringify(users));
-  };
-  
-  const setCurrentSession = (user: any) => {
-      localStorage.setItem('netchi_current_user', JSON.stringify(user));
-  };
-  // -----------------------------
 
   // Improved Username Handler
   const handleUsernameChange = (val: string) => {
@@ -148,119 +132,75 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
       setOtpInput('');
   };
 
-  const handleLoginRequest = () => {
-      const existingUsers = getUsers();
-      const selectedRoleLabel = role === UserRole.CUSTOMER ? 'مشتری' : 'کافی‌نت';
+  const handleLoginRequest = async () => {
+      if (!loginIdentifier || !loginPassword) {
+          showToast('لطفا ایمیل و رمز عبور را وارد کنید.', 'error');
+          return;
+      }
 
-      if (loginMethod === 'otp') {
-          if (phone.length < 10) {
-              showToast('شماره موبایل وارد شده صحیح نیست.');
-              return;
-          }
-          
-          // ** CHECK IF USER EXISTS FOR OTP LOGIN + STRICT ROLE CHECK **
-          // First, check if user exists at all
-          const userAnyRole = existingUsers.find(u => u.phone === phone);
-          
-          if (!userAnyRole) {
-              showToast('کاربری با این شماره موبایل یافت نشد. لطفا ابتدا ثبت نام کنید.', 'error');
-              return;
-          }
-
-          // STRICT ROLE CHECK
-          if (userAnyRole.role !== role) {
-               const correctRole = userAnyRole.role === UserRole.CUSTOMER ? 'مشتری' : 'کافی‌نت';
-               showToast(`این شماره متعلق به حساب «${correctRole}» است. لطفا از تب بالا نقش را تغییر دهید.`, 'error');
-               return;
-          }
-
-          const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-          setGeneratedOtp(randomCode);
-          setStep('otp_verify');
-          setTimeLeft(90);
-          setOtpInput('');
-      } else {
-          // ** PASSWORD LOGIN VERIFICATION + STRICT ROLE CHECK **
-          if (!loginIdentifier || !loginPassword) {
-              showToast('لطفا نام کاربری و رمز عبور را وارد کنید.');
-              return;
-          }
-
-          // Find user by credentials
-          const user = existingUsers.find(u => 
-              (u.username === loginIdentifier || u.email === loginIdentifier) && 
-              u.password === loginPassword
-          );
-
-          if (!user) {
-              showToast('نام کاربری یا رمز عبور اشتباه است.', 'error');
-              return;
-          }
-          
-          // STRICT ROLE CHECK
-          if (user.role !== role) {
-               const correctRole = user.role === UserRole.CUSTOMER ? 'مشتری' : 'کافی‌نت';
-               showToast(`شما با نقش «${selectedRoleLabel}» تلاش کردید، اما حساب شما «${correctRole}» است. لطفا نقش را تغییر دهید.`, 'error');
-               return;
-          }
-          
-          // Successful Password Login
+      try {
           setIsLoading(true);
-          setTimeout(() => {
-              setIsLoading(false);
-              showToast(`خوش آمدید ${user.name}`, 'success');
-              setCurrentSession(user); // Save session
-              setTimeout(() => onLogin(user.role as UserRole), 1000);
-          }, 1500);
+          const response = await ApiClient.login({
+              email: loginIdentifier,
+              password: loginPassword
+          });
+
+          if (response.token) {
+              const userRole = response.user.type === 'PROVIDER' ? UserRole.PROVIDER : UserRole.CUSTOMER;
+              showToast(`خوش آمدید ${response.user.userName}!`, 'success');
+              
+              setTimeout(() => {
+                  onLogin(userRole);
+              }, 500);
+          }
+      } catch (error: any) {
+          showToast(error.message || 'خطا در ورود. ایمیل یا رمز عبور اشتباه است.', 'error');
+      } finally {
+          setIsLoading(false);
       }
   };
 
-  const handleOtpVerify = () => {
-    if (otpInput !== generatedOtp) {
-        showToast("کد تایید اشتباه است.");
-        return;
+  const handleRegister = async () => {
+      if (!email || !password) {
+          showToast('لطفا ایمیل و رمز عبور را وارد کنید.', 'error');
+          return;
+      }
+
+      if (!checkPasswordStrength(password).length || !checkPasswordStrength(password).uppercase) {
+          showToast('رمز عبور باید حداقل 8 کاراکتر و حاوی حروف بزرگ باشد.', 'error');
+          return;
+      }
+
+      try {
+          setIsLoading(true);
+          const response = await ApiClient.register({
+              email: email,
+              password: password
+          });
+
+          if (response.token) {
+              const userRole = response.user.type === 'PROVIDER' ? UserRole.PROVIDER : UserRole.CUSTOMER;
+              showToast(`حساب کاربری ${response.user.email} ایجاد شد!`, 'success');
+              
+              setTimeout(() => {
+                  onLogin(userRole);
+              }, 500);
+          }
+      } catch (error: any) {
+          showToast(error.message || 'خطا در ثبت نام.', 'error');
+      } finally {
+          setIsLoading(false);
+      }
+  };
+
+  const handleOtpVerify = async () => {
+    // توضیح: برای ساده کردن، OTP حذف شد - فقط Email/Password استفاده کنید
+    // اگر ثبت نام بود، handleRegister را فراخوانی کنید
+    if (authMode === 'register') {
+        await handleRegister();
+    } else {
+        await handleLoginRequest();
     }
-
-    setIsLoading(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-        setIsLoading(false);
-        
-        let targetUser = null;
-
-        // ** ACTION BASED ON MODE **
-        if (authMode === 'register') {
-            // Save new user to LocalStorage
-            const newUser = {
-                id: Date.now().toString(),
-                name: fullName,
-                username: username,
-                email: email,
-                phone: phone,
-                password: password,
-                role: role, // Role selected during registration
-                joinDate: new Date().toLocaleDateString('fa-IR'),
-                status: 'Active'
-            };
-            saveUserToStorage(newUser);
-            targetUser = newUser;
-            showToast('حساب کاربری با موفقیت ساخته شد!', 'success');
-        } else {
-            showToast('ورود با موفقیت انجام شد!', 'success');
-             // Find the user to save session - STRICT ROLE MATCH ALREADY DONE IN PREVIOUS STEP
-             const users = getUsers();
-             targetUser = users.find(u => u.phone === phone && u.role === role);
-        }
-
-        if (targetUser) {
-            setCurrentSession(targetUser); // Save session
-            setTimeout(() => onLogin(targetUser.role), 500);
-        } else {
-             // Should not happen if logic is correct
-             showToast('خطا در بازیابی اطلاعات کاربر', 'error');
-        }
-    }, 1500);
   };
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, LogOut, Award, Smartphone, Mail, AtSign, Calendar } from 'lucide-react';
+import ApiClient from '../services/apiClient';
 
 interface Props {
   onLogout: () => void;
@@ -10,17 +11,33 @@ export const ProfileSection: React.FC<Props> = ({ onLogout }) => {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const sessionData = localStorage.getItem('netchi_current_user');
-    if (sessionData) {
-        setUser(JSON.parse(sessionData));
-    }
+    // توضیح: اگر API endpoint برای Get Current User وجود داشت:
+    // const fetchUser = async () => {
+    //   try {
+    //     const userData = await ApiClient.get('/v1/users/me');
+    //     setUser(userData);
+    //   } catch (error) {
+    //     console.error('Failed to fetch user:', error);
+    //   }
+    // };
+    // fetchUser();
+    
+    // برای حالا، صرفاً یک پیام نمایش دهید
+    setUser({ 
+      name: 'کاربر نت‌چی', 
+      userName: 'user',
+      email: 'user@netchireo.com',
+      type: 'CUSTOMER',
+      phone: '+98 XXX XXXX',
+      joinDate: new Date().toLocaleDateString('fa-IR')
+    });
   }, []);
 
   // Fallback if no user found (shouldn't happen in authenticated state)
   const userData = user || { 
       name: 'کاربر مهمان', 
-      username: 'guest', 
-      role: 'Customer', 
+      userName: 'guest', 
+      type: 'CUSTOMER', 
       phone: '---', 
       email: '---',
       joinDate: '---'
@@ -46,7 +63,7 @@ export const ProfileSection: React.FC<Props> = ({ onLogout }) => {
         </div>
         <h2 className="text-2xl font-black text-slate-800">{userData.name}</h2>
         <p className="text-slate-500 text-sm font-medium mt-1">
-            {userData.role === 'Provider' ? 'مدیر کافی‌نت' : 'کاربر عادی'}
+            {userData.type === 'PROVIDER' ? 'مدیر کافی‌نت' : 'کاربر عادی'}
         </p>
       </motion.div>
 
@@ -55,7 +72,7 @@ export const ProfileSection: React.FC<Props> = ({ onLogout }) => {
           <h3 className="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">اطلاعات حساب کاربری</h3>
           
           <div className="space-y-4">
-              <InfoRow icon={AtSign} label="نام کاربری" value={userData.username} />
+              <InfoRow icon={AtSign} label="نام کاربری" value={userData.userName} />
               <InfoRow icon={Smartphone} label="شماره موبایل" value={userData.phone} />
               <InfoRow icon={Mail} label="ایمیل" value={userData.email} />
               <InfoRow icon={Calendar} label="تاریخ عضویت" value={userData.joinDate || '۱۴۰۲/۰۱/۰۱'} />
@@ -78,7 +95,7 @@ export const ProfileSection: React.FC<Props> = ({ onLogout }) => {
         
         <button 
             onClick={() => {
-                localStorage.removeItem('netchi_current_user'); // Clear session
+                ApiClient.logout(); // Clear token from apiClient
                 onLogout();
             }}
             className="w-full mt-8 p-4 rounded-2xl border-2 border-red-100 text-red-500 font-bold flex items-center justify-center gap-2 hover:bg-red-50 transition-colors"

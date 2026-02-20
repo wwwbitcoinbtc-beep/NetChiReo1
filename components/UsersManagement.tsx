@@ -25,14 +25,19 @@ export const UsersManagement: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>([]);
 
   useEffect(() => {
-    const storedUsers = localStorage.getItem('netchi_users');
-    if (storedUsers) {
-        const parsedUsers = JSON.parse(storedUsers);
-        // Merge mock data with real stored users for better demo experience
-        setUsers([...parsedUsers.reverse(), ...mockUsers]);
-    } else {
-        setUsers(mockUsers);
-    }
+    // بیرون آردن localStorage - استفاده از Mock Data فقط
+    // برای آینده می‌توانید API endpoint اضافه کنید:
+    // const fetchUsers = async () => {
+    //   try {
+    //     const usersData = await ApiClient.get('/v1/users');
+    //     setUsers(usersData);
+    //   } catch (error) {
+    //     console.error('Failed to fetch users:', error);
+    //   }
+    // };
+    // fetchUsers();
+    
+    setUsers(mockUsers);
   }, []);
 
   const filteredUsers = users.filter(user => 

@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Glass Effect */
+@layer components {
+  .bg-glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+
+  .shadow-glass {
+    @apply shadow-lg;
+  }
+
+  .glass-button {
+    @apply bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 transition-all duration-300;
+  }
+}
+
+/* Animations */
+@keyframes float {
+  0%,100% { transform: translateY(0px); }
+  50% { transform: translateY(20px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* RTL Support */
+* {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
