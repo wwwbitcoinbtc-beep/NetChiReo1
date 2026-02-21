@@ -30,6 +30,79 @@ const config = {
   }
 };
 
+// Master config for creating database
+const masterConfig = {
+  server: process.env.DB_SERVER || 'sqlserver',
+  authentication: {
+    type: 'default',
+    options: {
+      userName: process.env.DB_USER || 'sa',
+      password: process.env.DB_PASSWORD || 'NetChi@2024'
+    }
+  },
+  options: {
+    database: 'master',
+    rowCollectionOnRequestCompletion: true,
+    trustServerCertificate: true,
+    encrypt: false,
+    connectTimeout: 10000
+  }
+};
+
+// Function to initialize database
+async function initializeDatabase() {
+  return new Promise((resolve, reject) => {
+    const connection = new Connection(masterConfig);
+    
+    connection.on('connect', (err) => {
+      if (err) {
+        console.error('Master connection error:', err);
+        return reject(err);
+      }
+      
+      const checkDbQuery = `
+        IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '${process.env.DB_NAME || "NetChiDB"}')
+        BEGIN
+          CREATE DATABASE [${process.env.DB_NAME || "NetChiDB"}];
+        END
+      `;
+      
+      const checkDbRequest = new Request(checkDbQuery, (err) => {
+        if (err) {
+          console.error('Database creation error:', err);
+          connection.close();
+          return reject(err);
+        }
+      });
+      
+      checkDbRequest.on('requestCompleted', () => {
+        connection.close();
+        console.log('✓ Database checked/created successfully');
+        resolve();
+      });
+      
+      connection.execSql(checkDbRequest);
+    });
+    
+    connection.on('error', (err) => {
+      console.error('Connection error:', err);
+      reject(err);
+    });
+    
+    connection.connect();
+  });
+}
+
+// Initialize database on startup
+(async () => {
+  try {
+    await initializeDatabase();
+    console.log('✓ Database initialization complete');
+  } catch (err) {
+    console.error('Database initialization failed:', err);
+  }
+})();
+
 // Health Check Endpoint
 app.get('/health', (req, res) => {
   res.json({ 
@@ -38,6 +111,62 @@ app.get('/health', (req, res) => {
     port: PORT,
     timestamp: new Date().toISOString()
   });
+});
+
+
+// Simple test connection (without database selection)
+app.get('/api/test', (req, res) => {
+  const testConfig = {
+    server: process.env.DB_SERVER || 'sqlserver',
+    authentication: {
+      type: 'default',
+      options: {
+        userName: process.env.DB_USER || 'sa',
+        password: process.env.DB_PASSWORD || 'NetChi@2024'
+      }
+    },
+    options: {
+      rowCollectionOnRequestCompletion: true,
+      trustServerCertificate: true,
+      encrypt: false,
+      connectTimeout: 10000
+    }
+  };
+  
+  const connection = new Connection(testConfig);
+  
+  connection.on('connect', (err) => {
+    if (err) {
+      console.error('Connection error:', err);
+      return res.status(500).json({ error: 'Database connection failed', details: err.message });
+    }
+    
+    const request = new Request('SELECT @@VERSION as version', (err) => {
+      if (err) {
+        console.error('Query error:', err);
+        return res.status(500).json({ error: 'Query failed', details: err.message });
+      }
+    });
+    
+    let version = '';
+    request.on('row', (columns) => {
+      version = columns[0].value;
+    });
+    
+    request.on('requestCompleted', () => {
+      connection.close();
+      res.json({ success: true, version, message: 'Connected to SQL Server' });
+    });
+    
+    connection.execSql(request);
+  });
+  
+  connection.on('error', (err) => {
+    console.error('Connection error:', err);
+    res.status(500).json({ error: 'Connection failed', details: err.message });
+  });
+  
+  connection.connect();
 });
 
 // Get All Tables with Column Info
