@@ -1,54 +1,43 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Custom Glass Effect */
-@layer components {
-  .bg-glass {
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
-  .shadow-glass {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  .pop-3d {
+    background: #f0f4f8;
+    box-shadow: 
+      8px 8px 16px #d1d9e6, 
+      -8px -8px 16px #ffffff;
   }
-
-  .glass-button {
-    background-color: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-  }
-
-  .glass-button:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+  
+  .pop-3d-inset {
+    background: #f0f4f8;
+    box-shadow: 
+      inset 5px 5px 10px #d1d9e6, 
+      inset -5px -5px 10px #ffffff;
   }
 }
 
-/* Animations */
-@keyframes float {
-  0%,100% { transform: translateY(0px); }
-  50% { transform: translateY(20px); }
+body {
+  font-family: "Vazirmatn", system-ui, sans-serif;
+  @apply bg-slate-100;
 }
 
-@keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
-}
-
-/* Smooth scroll */
 html {
   scroll-behavior: smooth;
 }
 
-/* RTL Support */
 * {
   direction: rtl;
   text-align: right;
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
 }

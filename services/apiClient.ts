@@ -6,9 +6,33 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+// Authentication Interfaces
 export interface LoginRequest {
-  email: string;
+  username?: string;
+  password?: string;
+  phoneNumber?: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  phoneNumber: string;
   password: string;
+  fullName?: string;
+}
+
+export interface OtpRequestDto {
+  phoneNumber: string;
+}
+
+export interface OtpVerificationDto {
+  phoneNumber: string;
+  verificationCode: string;
+}
+
+export interface OtpResponseDto {
+  phoneNumber: string;
+  message: string;
+  expirySeconds: number;
 }
 
 export interface LoginResponse {
@@ -17,7 +41,7 @@ export interface LoginResponse {
   user: {
     id: string;
     userName: string;
-    email: string;
+    phoneNumber?: string;
     type: string;
   };
 }
@@ -118,10 +142,10 @@ export class ApiClient {
   }
 
   /**
-   * Login
+   * Login with username and password
    */
   static async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await this.post<LoginResponse>('/auth/login', credentials);
+    const response = await this.post<LoginResponse>('/v1/auth/login', credentials);
     if (response.token) {
       this.setToken(response.token);
     }
@@ -131,8 +155,26 @@ export class ApiClient {
   /**
    * Register - نیا کاربر ثبت کنید
    */
-  static async register(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await this.post<LoginResponse>('/auth/register', credentials);
+  static async register(credentials: RegisterRequest): Promise<LoginResponse> {
+    const response = await this.post<LoginResponse>('/v1/auth/register', credentials);
+    if (response.token) {
+      this.setToken(response.token);
+    }
+    return response;
+  }
+
+  /**
+   * Request OTP for phone-based authentication
+   */
+  static async requestOtp(request: OtpRequestDto): Promise<OtpResponseDto> {
+    return this.post<OtpResponseDto>('/v1/auth/request-otp', request);
+  }
+
+  /**
+   * Verify OTP and login/register
+   */
+  static async verifyOtp(request: OtpVerificationDto): Promise<LoginResponse> {
+    const response = await this.post<LoginResponse>('/v1/auth/verify-otp', request);
     if (response.token) {
       this.setToken(response.token);
     }

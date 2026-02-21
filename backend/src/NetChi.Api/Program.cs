@@ -2,6 +2,7 @@ using NetChi.Api.Hubs;
 using NetChi.Api.Extensions;
 using NetChi.Infrastructure.Persistence.Context;
 using NetChi.Application.Mappings;
+using NetChi.Application.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -134,6 +135,9 @@ builder.Services.AddEndpointsApiExplorer();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+// OTP Service for authentication
+builder.Services.AddScoped<IOtpService, OtpService>();
 
 // ============ Build App ============
 

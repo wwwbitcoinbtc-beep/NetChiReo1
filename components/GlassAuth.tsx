@@ -37,18 +37,18 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
   // Registration Fields
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   
   // Login Fields (Password Method)
-  const [loginIdentifier, setLoginIdentifier] = useState(''); // Email or Username
+  const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
   // OTP Logic
   const [otpInput, setOtpInput] = useState('');
+  const [otpPhone, setOtpPhone] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState(90);
+  const [timeLeft, setTimeLeft] = useState(0);
 
   // System State
   const [isLoading, setIsLoading] = useState(false);
@@ -88,44 +88,74 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
   };
 
   const handleLoginRequest = async () => {
-      if (!loginIdentifier || !loginPassword) {
-          showToast('لطفا ایمیل و رمز عبور را وارد کنید.', 'error');
-          return;
-      }
-
-      try {
-          setIsLoading(true);
-          const response = await ApiClient.login({
-              email: loginIdentifier,
-              password: loginPassword
-          });
-
-          if (response.token) {
-              // Save user info to localStorage
-              localStorage.setItem('user', JSON.stringify({
-                  id: response.user.id,
-                  email: response.user.email,
-                  userName: response.user.userName,
-                  type: response.user.type
-              }));
-              
-              const userRole = response.user.type === 'PROVIDER' ? UserRole.PROVIDER : UserRole.CUSTOMER;
-              showToast(`خوش آمدید ${response.user.userName}!`, 'success');
-              
-              setTimeout(() => {
-                  onLogin(userRole);
-              }, 500);
+      if (loginMethod === 'password') {
+          // Username/Password login
+          if (!loginUsername || !loginPassword) {
+              showToast('لطفا نام کاربری و رمز عبور را وارد کنید.', 'error');
+              return;
           }
-      } catch (error: any) {
-          showToast(error.message || 'خطا در ورود. ایمیل یا رمز عبور اشتباه است.', 'error');
-      } finally {
-          setIsLoading(false);
+
+          try {
+              setIsLoading(true);
+              const response = await ApiClient.login({
+                  username: loginUsername,
+                  password: loginPassword,
+              });
+
+              if (response.token) {
+                  localStorage.setItem('user', JSON.stringify({
+                      id: response.user.id,
+                      phoneNumber: response.user.phoneNumber,
+                      userName: response.user.userName,
+                      type: response.user.type
+                  }));
+                  
+                  const userRole = response.user.type === 'PROVIDER' ? UserRole.PROVIDER : UserRole.CUSTOMER;
+                  showToast(`خوش آمدید ${response.user.userName}!`, 'success');
+                  
+                  setTimeout(() => {
+                      onLogin(userRole);
+                  }, 500);
+              }
+          } catch (error: any) {
+              showToast(error.message || 'خطا در ورود. نام کاربری یا رمز عبور اشتباه است.', 'error');
+          } finally {
+              setIsLoading(false);
+          }
+      } else {
+          // OTP login - Request OTP
+          if (!otpPhone) {
+              showToast('لطفا شماره موبایل را وارد کنید.', 'error');
+              return;
+          }
+
+          try {
+              setIsLoading(true);
+              const response = await ApiClient.requestOtp({ phoneNumber: otpPhone });
+              
+              // Show OTP verification step
+              setStep('otp_verify');
+              setTimeLeft(300); // 5 minutes
+              showToast('کد تایید ارسال شد', 'success');
+              
+              // For development: extract OTP from response message
+              if (response.message && response.message.includes('کد تست:')) {
+                  const match = response.message.match(/(\d{6})/);
+                  if (match) {
+                      setGeneratedOtp(match[1]);
+                  }
+              }
+          } catch (error: any) {
+              showToast(error.message || 'خطا در درخواست کد تایید.', 'error');
+          } finally {
+              setIsLoading(false);
+          }
       }
   };
 
   const handleRegister = async () => {
-      if (!email || !password) {
-          showToast('لطفا ایمیل و رمز عبور را وارد کنید.', 'error');
+      if (!username || !phone || !password) {
+          showToast('لطفا نام کاربری، شماره موبایل و رمز عبور را وارد کنید.', 'error');
           return;
       }
 
@@ -138,21 +168,22 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
       try {
           setIsLoading(true);
           const response = await ApiClient.register({
-              email: email,
-              password: password
+              username: username,
+              phoneNumber: phone,
+              password: password,
+              fullName: fullName || undefined
           });
 
           if (response.token) {
-              // Save user info to localStorage
               localStorage.setItem('user', JSON.stringify({
                   id: response.user.id,
-                  email: response.user.email,
+                  phoneNumber: response.user.phoneNumber,
                   userName: response.user.userName,
                   type: response.user.type
               }));
               
               const userRole = response.user.type === 'PROVIDER' ? UserRole.PROVIDER : UserRole.CUSTOMER;
-              showToast(`حساب کاربری ${response.user.email} ایجاد شد!`, 'success');
+              showToast(`حساب کاربری ${response.user.userName} ایجاد شد!`, 'success');
               
               setTimeout(() => {
                   onLogin(userRole);
@@ -166,12 +197,42 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
   };
 
   const handleOtpVerify = async () => {
-    // توضیح: برای ساده کردن، OTP حذف شد - فقط Email/Password استفاده کنید
-    // اگر ثبت نام بود، handleRegister را فراخوانی کنید
     if (authMode === 'register') {
         await handleRegister();
-    } else {
-        await handleLoginRequest();
+    } else if (authMode === 'login' && loginMethod === 'otp') {
+        // Verify OTP and login
+        if (!otpInput || otpInput.length !== 6) {
+            showToast('لطفا کد ۶ رقمی را وارد کنید.', 'error');
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            const response = await ApiClient.verifyOtp({
+                phoneNumber: otpPhone,
+                verificationCode: otpInput
+            });
+
+            if (response.token) {
+                localStorage.setItem('user', JSON.stringify({
+                    id: response.user.id,
+                    phoneNumber: response.user.phoneNumber,
+                    userName: response.user.userName,
+                    type: response.user.type
+                }));
+                
+                const userRole = response.user.type === 'PROVIDER' ? UserRole.PROVIDER : UserRole.CUSTOMER;
+                showToast(`خوش آمدید ${response.user.phoneNumber}!`, 'success');
+                
+                setTimeout(() => {
+                    onLogin(userRole);
+                }, 500);
+            }
+        } catch (error: any) {
+            showToast(error.message || 'کد تایید اشتباه است.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
     }
   };
 
@@ -194,6 +255,15 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
       setAuthMode(prev => prev === 'login' ? 'register' : 'login');
       // Reset states
       setStep('input');
+      setOtpInput('');
+      setTimeLeft(0);
+      setFullName('');
+      setUsername('');
+      setPhone('');
+      setOtpPhone('');
+      setPassword('');
+      setLoginUsername('');
+      setLoginPassword('');
       setToast(null);
   };
 
@@ -228,7 +298,7 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
                 {step === 'otp_verify' ? 'تایید شماره موبایل' : (authMode === 'login' ? 'ورود به حساب' : 'ایجاد حساب کاربری')}
             </h2>
             <p className="text-slate-500 text-sm">
-                {step === 'otp_verify' ? `کد ارسال شده به ${phone} را وارد کنید` : 'به دنیای اینترنت پرسرعت خوش آمدید'}
+                {step === 'otp_verify' ? `کد ارسال شده به ${otpPhone} را وارد کنید` : 'به دنیای اینترنت پرسرعت خوش آمدید'}
             </p>
         </div>
 
@@ -264,7 +334,6 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
                                 onChange={handleUsernameChange} // Custom handler for validation
                                 dir="ltr"
                             />
-                            <InputGroup icon={Mail} placeholder="ایمیل" value={email} onChange={setEmail} dir="ltr" />
                             <InputGroup icon={Smartphone} placeholder="شماره موبایل" value={phone} onChange={setPhone} dir="ltr" type="tel" />
                             
                             <div className="relative">
@@ -275,13 +344,13 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
 
                     {/* LOGIN FORM - OTP */}
                     {authMode === 'login' && loginMethod === 'otp' && (
-                        <InputGroup icon={Smartphone} placeholder="شماره موبایل" value={phone} onChange={setPhone} dir="ltr" type="tel" />
+                        <InputGroup icon={Smartphone} placeholder="شماره موبایل" value={otpPhone} onChange={setOtpPhone} dir="ltr" type="tel" />
                     )}
 
                     {/* LOGIN FORM - PASSWORD */}
                     {authMode === 'login' && loginMethod === 'password' && (
                         <div className="space-y-3">
-                            <InputGroup icon={User} placeholder="نام کاربری یا ایمیل" value={loginIdentifier} onChange={setLoginIdentifier} dir="ltr" />
+                            <InputGroup icon={User} placeholder="نام کاربری" value={loginUsername} onChange={setLoginUsername} dir="ltr" />
                             <InputGroup icon={Key} placeholder="رمز عبور" value={loginPassword} onChange={setLoginPassword} type="password" dir="ltr" />
                         </div>
                     )}
@@ -328,7 +397,7 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
                 >
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center mb-2">
                         <p className="text-xs text-blue-400 mb-1">کد تایید آزمایشی</p>
-                        <p className="text-2xl font-black text-blue-600 tracking-widest font-mono">{generatedOtp}</p>
+                        <p className="text-2xl font-black text-blue-600 tracking-widest font-mono">{generatedOtp || '------'}</p>
                     </div>
 
                     <div className="relative group">
@@ -367,11 +436,12 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
                     <button 
                         onClick={() => {
                             if (timeLeft === 0) {
-                                const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-                                setGeneratedOtp(randomCode);
-                                setTimeLeft(90);
+                                // Resend OTP - call the request-otp endpoint again
+                                handleLoginRequest();
                             } else {
+                                // Go back to input step
                                 setStep('input');
+                                setOtpInput('');
                             }
                         }} 
                         className="w-full text-slate-400 text-xs py-2 hover:text-blue-500"
