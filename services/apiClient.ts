@@ -129,6 +129,17 @@ export class ApiClient {
   }
 
   /**
+   * Register - نیا کاربر ثبت کنید
+   */
+  static async register(credentials: LoginRequest): Promise<LoginResponse> {
+    const response = await this.post<LoginResponse>('/auth/register', credentials);
+    if (response.token) {
+      this.setToken(response.token);
+    }
+    return response;
+  }
+
+  /**
    * Logout
    */
   static logout(): void {

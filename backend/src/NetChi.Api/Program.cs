@@ -179,4 +179,8 @@ app.MapHub<OrderHub>("/hubs/order");
 app.MapGet("/health", () => new { status = "healthy", timestamp = DateTime.UtcNow })
     .WithName("HealthCheck");
 
+// ============ Database Initialization & Seeding ============
+Console.WriteLine("🚀 Starting database initialization...");
+await app.SeedDatabaseAsync();
+
 app.Run();
