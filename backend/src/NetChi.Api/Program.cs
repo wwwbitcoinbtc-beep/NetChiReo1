@@ -180,7 +180,15 @@ app.MapGet("/health", () => new { status = "healthy", timestamp = DateTime.UtcNo
     .WithName("HealthCheck");
 
 // ============ Database Initialization & Seeding ============
-Console.WriteLine("🚀 Starting database initialization...");
-await app.SeedDatabaseAsync();
+try
+{
+    Console.WriteLine("🚀 شروع: ڈیٹابیس شروع کر رہے ہیں...");
+    await app.SeedDatabaseAsync();
+    Console.WriteLine("✅ ڈیٹابیس تیار ہے!");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"⚠️ ڈیٹابیس میں مسئلہ لیکن app چل رہا ہے: {ex.Message}");
+}
 
 app.Run();
