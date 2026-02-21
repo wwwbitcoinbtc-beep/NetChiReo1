@@ -22,8 +22,40 @@ export const useApi = () => {
     }
   }, []);
 
-  return { loading, error, data, request };
+  // ساده تر API call برای DatabaseManager و موارد مشابه
+  const fetchAPI = useCallback(async (url: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5232'}${url}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      setData(result);
+      return result;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'An error occurred';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { loading, error, data, request, fetchAPI };
 };
+
 
 export const useLogin = () => {
   const { loading, error, request } = useApi();

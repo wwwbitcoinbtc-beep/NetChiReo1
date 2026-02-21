@@ -44,19 +44,26 @@ const DatabaseManager: React.FC = () => {
   const loadDatabaseInfo = async () => {
     setLoading(true);
     try {
-      // Get tables
-      const tablesRes = await fetchAPI('/database/tables');
+      // دریافت اطلاعات جداول
+      const tablesRes = await fetchAPI('/api/v1/database/tables');
       if (tablesRes?.data?.tables) {
         setTables(tablesRes.data.tables);
+      } else {
+        console.warn('هیچ جدولی یافت نشد');
+        setTables([]);
       }
 
-      // Get stats
-      const statsRes = await fetchAPI('/database/stats');
+      // دریافت آمار database
+      const statsRes = await fetchAPI('/api/v1/database/stats');
       if (statsRes?.data) {
         setStats(statsRes.data);
+      } else {
+        console.warn('آمار database بدست نیامد');
       }
     } catch (error) {
-      console.error('Error loading database info:', error);
+      console.error('خطا در بارگذاری اطلاعات Database:', error);
+      setTables([]);
+      setStats(null);
     } finally {
       setLoading(false);
     }
@@ -65,12 +72,16 @@ const DatabaseManager: React.FC = () => {
   const loadTableData = async (tableName: string) => {
     try {
       setSelectedTable(tableName);
-      const res = await fetchAPI(`/database/table/${tableName}/data`);
+      const res = await fetchAPI(`/api/v1/database/table/${tableName}/data`);
       if (res?.data) {
         setTableData(res.data);
+      } else {
+        console.warn(`داده‌های جدول ${tableName} بدست نیامد`);
+        setTableData(null);
       }
     } catch (error) {
-      console.error('Error loading table data:', error);
+      console.error('خطا در بارگذاری داده‌های جدول:', error);
+      setTableData(null);
     }
   };
 
@@ -85,34 +96,68 @@ const DatabaseManager: React.FC = () => {
   };
 
   const downloadAsCSV = () => {
-    if (!tableData) return;
+    if (!tableData || !tableData.rows || tableData.rows.length === 0) {
+      alert('داده‌ای برای دانلود وجود ندارد');
+      return;
+    }
 
-    const headers = Object.keys(tableData.rows[0]);
-    const rows = tableData.rows.map(row => 
-      headers.map(header => {
-        const value = row[header];
-        if (typeof value === 'string' && value.includes(',')) {
-          return `"${value}"`;
-        }
-        return value;
-      }).join(',')
-    );
+    try {
+      const headers = Object.keys(tableData.rows[0]);
+      const rows = tableData.rows.map(row => 
+        headers.map(header => {
+          const value = row[header];
+          if (typeof value === 'string' && value.includes(',')) {
+            return `"${value}"`;
+          }
+          return value ?? '';
+        }).join(',')
+      );
 
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${tableData.tableName}.csv`;
-    a.click();
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${tableData.tableName}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('خطا در دانلود CSV:', error);
+      alert('خطا در دانلود فایل');
+    }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <Database className="w-12 h-12 mx-auto mb-4 text-blue-500 animate-pulse" />
-          <p className="text-gray-600">در حال بارگذاری اطلاعات Database...</p>
+          <div className="mb-4">
+            <Database className="w-12 h-12 mx-auto text-blue-500 animate-spin" />
+          </div>
+          <p className="text-gray-600 font-semibold">در حال بارگذاری اطلاعات Database...</p>
+          <p className="text-gray-400 text-sm mt-2">لطفا صبر کنید</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!tables || tables.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <Database className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+          <p className="text-gray-600 font-semibold">هیچ جدولی یافت نشد</p>
+          <p className="text-gray-400 text-sm mt-2">لطفا بعداً دوباره تلاش کنید</p>
+          <button
+            onClick={loadDatabaseInfo}
+            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+          >
+            تازه کردن
+          </button>
         </div>
       </div>
     );
