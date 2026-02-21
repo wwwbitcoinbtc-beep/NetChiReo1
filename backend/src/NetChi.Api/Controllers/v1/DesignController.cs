@@ -23,7 +23,7 @@ public class DesignController : ControllerBase
 
             var designSystem = new
             {
-                colors = new[]
+                colors = new object[]
                 {
                     new { id = "primary", name = "رنگ اصلی", hex = "#3B82F6", tailwind = "bg-blue-500" },
                     new { id = "accent", name = "رنگ تاکیدی", hex = "#10B981", tailwind = "bg-emerald-500" },
@@ -32,7 +32,7 @@ public class DesignController : ControllerBase
                     new { id = "warning", name = "هشدار", hex = "#F59E0B", tailwind = "bg-amber-500" },
                     new { id = "danger", name = "خطر", hex = "#EF4444", tailwind = "bg-red-500" },
                 },
-                typography = new[]
+                typography = new object[]
                 {
                     new { id = "heading1", name = "عنوان بزرگ", size = "32px", weight = "black", family = "Vazirmatn" },
                     new { id = "heading2", name = "عنوان متوسط", size = "24px", weight = "bold", family = "Vazirmatn" },
@@ -55,20 +55,20 @@ public class DesignController : ControllerBase
                     xl = "16px",
                     full = "9999px",
                 },
-                shadows = new[]
+                shadows = new object[]
                 {
                     new { id = "sm", value = "0 1px 2px 0 rgba(0, 0, 0, 0.05)" },
                     new { id = "md", value = "0 4px 6px -1px rgba(0, 0, 0, 0.1)" },
                     new { id = "lg", value = "0 10px 15px -3px rgba(0, 0, 0, 0.1)" },
                     new { id = "glass", value = "0 8px 32px rgba(0, 0, 0, 0.1)" },
                 },
-                animations = new[]
+                animations = new object[]
                 {
                     new { id = "float", duration = "6s", timing = "ease-in-out" },
                     new { id = "shimmer", duration = "2s", timing = "linear" },
                     new { id = "pulse", duration = "2s", timing = "cubic-bezier(0.4, 0, 0.6, 1)" },
                 },
-                components = new[]
+                components = new object[]
                 {
                     new { id = "button", name = "دکمه", states = new[] { "default", "hover", "active", "disabled" } },
                     new { id = "card", name = "کارت", variants = new[] { "default", "glass", "outlined" } },

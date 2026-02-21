@@ -69,7 +69,7 @@ public class AuthController : ControllerBase
         return Ok(new LoginResponse
         {
             Token = token,
-            Expiration = DateTime.UtcNow.AddHours(24).ToString("O"),
+            Expiration = DateTime.UtcNow.AddHours(24),
             User = new UserDto
             {
                 Id = user.Id,
@@ -88,11 +88,17 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        // Validate password - شش رقم کافی است
+        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
+        {
+            return BadRequest("رمز عبور باید حداقل ۶ کاراکتر باشد.");
+        }
+
         // Check if email already exists
         var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         if (existingUser != null)
         {
-            return BadRequest("Email already registered");
+            return BadRequest("این ایمیل قبلاً ثبت شده است.");
         }
 
         // Create new user
@@ -118,7 +124,7 @@ public class AuthController : ControllerBase
         return CreatedAtAction(nameof(Login), new LoginResponse
         {
             Token = token,
-            Expiration = DateTime.UtcNow.AddHours(24).ToString("O"),
+            Expiration = DateTime.UtcNow.AddHours(24),
             User = new UserDto
             {
                 Id = user.Id,

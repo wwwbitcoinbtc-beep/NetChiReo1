@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppView, UserRole } from '../types';
-import { Home, User, Zap, Bell, Search, Users, Palette, ShoppingCart } from 'lucide-react';
+import { Home, User, Zap, Bell, Search, Users, Palette, ShoppingCart, Database } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Props {
@@ -15,6 +15,7 @@ export const DesktopLayout: React.FC<Props> = ({ currentView, onChangeView, user
     { id: AppView.HOME, icon: Home, label: 'داشبورد' },
     { id: AppView.PROFILE, icon: User, label: 'پروفایل کاربری' },
     { id: AppView.ORDERS, icon: ShoppingCart, label: 'سفارشات' },
+    { id: AppView.DATABASE, icon: Database, label: 'مدیریت Database' },
     { id: AppView.DESIGN, icon: Palette, label: 'سیستم طراحی' },
   ];
 

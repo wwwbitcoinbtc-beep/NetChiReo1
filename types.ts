@@ -4,7 +4,8 @@ export enum AppView {
   PROFILE = 'PROFILE',
   USERS = 'USERS',
   DESIGN = 'DESIGN',
-  ORDERS = 'ORDERS'
+  ORDERS = 'ORDERS',
+  DATABASE = 'DATABASE'
 }
 
 export enum UserRole {

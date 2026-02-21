@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, User, Users, Palette, ShoppingCart } from 'lucide-react';
+import { Home, User, Users, Palette, ShoppingCart, Database } from 'lucide-react';
 import { AppView, UserRole } from '../types';
 
 interface Props {
@@ -15,6 +15,7 @@ export const ThreeDBottomNav: React.FC<Props> = ({ currentView, onChangeView, us
     { id: AppView.HOME, icon: Home, label: 'خانه' },
     { id: AppView.PROFILE, icon: User, label: 'پروفایل' },
     { id: AppView.ORDERS, icon: ShoppingCart, label: 'سفارشات' },
+    { id: AppView.DATABASE, icon: Database, label: 'Database' },
     { id: AppView.DESIGN, icon: Palette, label: 'طراحی' },
   ];
 

@@ -6,6 +6,7 @@ import { ProfileSection } from './components/ProfileSection';
 import { UsersManagement } from './components/UsersManagement';
 import { DesignSection } from './components/DesignSection';
 import { OrdersSection } from './components/OrdersSection';
+import DatabaseManager from './components/DatabaseManager';
 import { DesktopLayout } from './components/DesktopLayout';
 import { AppView, UserRole } from './types';
 import { Bell, Menu } from 'lucide-react';
@@ -55,6 +56,8 @@ const App: React.FC = () => {
         return <DesignSection />;
       case AppView.ORDERS:
         return <OrdersSection />;
+      case AppView.DATABASE:
+        return <DatabaseManager />;
       default:
         return <HeroSection />;
     }

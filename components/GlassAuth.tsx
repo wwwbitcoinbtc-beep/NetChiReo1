@@ -78,14 +78,12 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
       setUsername(val);
   };
 
-  // Password Validation Logic
+  // Password Validation Logic - ساده‌تر و کامل
   const checkPasswordStrength = (pass: string) => {
       return {
-          length: pass.length >= 8,
-          upper: /[A-Z]/.test(pass),
-          lower: /[a-z]/.test(pass),
-          number: /[0-9]/.test(pass),
-          special: /[!@#$%^&*(),.?":{}|<>]/.test(pass),
+          length: pass.length >= 6,           // شش رقم کافی است
+          number: /[0-9]/.test(pass),         // باید عدد داشته باشد
+          special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(pass),  // اختیاری
       };
   };
 
@@ -131,8 +129,9 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
           return;
       }
 
-      if (!checkPasswordStrength(password).length || !checkPasswordStrength(password).uppercase) {
-          showToast('رمز عبور باید حداقل 8 کاراکتر و حاوی حروف بزرگ باشد.', 'error');
+      // شش رقم کافی است و باید عدد داشته باشد
+      if (!checkPasswordStrength(password).length || !checkPasswordStrength(password).number) {
+          showToast('رمز عبور باید حداقل ۶ کاراکتر و حاوی حرف یا عدد باشد.', 'error');
           return;
       }
 
@@ -274,11 +273,8 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
                                 {/* Password Requirement Checklist */}
                                 {password.length > 0 && (
                                     <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                                        <PasswordRequirement satisfied={passwordStrength.length} label="حداقل ۸ کاراکتر" />
-                                        <PasswordRequirement satisfied={passwordStrength.upper} label="حرف بزرگ (A-Z)" />
-                                        <PasswordRequirement satisfied={passwordStrength.lower} label="حرف کوچک (a-z)" />
-                                        <PasswordRequirement satisfied={passwordStrength.number} label="عدد (0-9)" />
-                                        <PasswordRequirement satisfied={passwordStrength.special} label="کاراکتر خاص (!@#)" />
+                                        <PasswordRequirement satisfied={passwordStrength.length} label="حداقل ۶ کاراکتر" />
+                                        <PasswordRequirement satisfied={passwordStrength.number} label="شامل عدد (۰-۹)" />
                                     </div>
                                 )}
                             </div>
