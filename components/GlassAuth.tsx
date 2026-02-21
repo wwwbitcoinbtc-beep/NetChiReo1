@@ -269,14 +269,6 @@ export const GlassAuth: React.FC<Props> = ({ onLogin }) => {
                             
                             <div className="relative">
                                 <InputGroup icon={Lock} placeholder="رمز عبور" value={password} onChange={setPassword} dir="ltr" type="password" />
-                                
-                                {/* Password Requirement Checklist */}
-                                {password.length > 0 && (
-                                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                                        <PasswordRequirement satisfied={passwordStrength.length} label="حداقل ۶ کاراکتر" />
-                                        <PasswordRequirement satisfied={passwordStrength.number} label="شامل عدد (۰-۹)" />
-                                    </div>
-                                )}
                             </div>
                         </div>
                     )}
