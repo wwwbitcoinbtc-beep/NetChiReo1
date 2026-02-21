@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const Connection = require('tedious').Connection;
 const Request = require('tedious').Request;
 const TYPES = require('tedious').TYPES;
@@ -10,6 +11,9 @@ const PORT = 6161;
 // CORS Configuration
 app.use(cors());
 app.use(express.json());
+
+// Serve static files (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname)));
 
 // SQL Server Connection Configuration
 const config = {
@@ -376,218 +380,15 @@ app.get('/api/stats', (req, res) => {
   connection.connect();
 });
 
-// Serve HTML Dashboard
+// Serve modern dashboard from index.html
 app.get('/', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="fa" dir="rtl">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>SQL Server Database Viewer</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-          min-height: 100vh;
-          padding: 20px;
-        }
-        .container {
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-        .header {
-          background: white;
-          padding: 30px;
-          border-radius: 10px;
-          margin-bottom: 30px;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .header h1 {
-          color: #1e3c72;
-          margin-bottom: 10px;
-          font-size: 32px;
-        }
-        .header p {
-          color: #666;
-          font-size: 14px;
-        }
-        .stats {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-        .stat-card {
-          background: white;
-          padding: 20px;
-          border-radius: 10px;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-          text-align: center;
-        }
-        .stat-card h3 {
-          color: #666;
-          font-size: 14px;
-          margin-bottom: 10px;
-        }
-        .stat-card .value {
-          color: #1e3c72;
-          font-size: 32px;
-          font-weight: bold;
-        }
-        .tables-container {
-          background: white;
-          border-radius: 10px;
-          overflow: hidden;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .table-header {
-          background: #f8f9fa;
-          padding: 20px;
-          border-bottom: 1px solid #e9ecef;
-        }
-        .table-header h2 {
-          color: #1e3c72;
-          font-size: 20px;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        th, td {
-          padding: 15px;
-          text-align: right;
-          border-bottom: 1px solid #e9ecef;
-        }
-        th {
-          background: #f8f9fa;
-          font-weight: 600;
-          color: #1e3c72;
-        }
-        tr:hover {
-          background: #f8f9fa;
-        }
-        .btn {
-          background: #2a5298;
-          color: white;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 5px;
-          cursor: pointer;
-          font-size: 12px;
-          transition: background 0.3s;
-        }
-        .btn:hover {
-          background: #1e3c72;
-        }
-        .loading {
-          text-align: center;
-          padding: 40px;
-          color: #666;
-        }
-        .error {
-          background: #f8d7da;
-          color: #721c24;
-          padding: 15px;
-          border-radius: 5px;
-          margin-bottom: 20px;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>📊 SQL Server Database Viewer</h1>
-          <p>پورت 6161 - نمایش اطلاعات SQL Server</p>
-        </div>
-
-        <div id="stats" class="stats"></div>
-        <div id="error"></div>
-        <div id="content" class="tables-container">
-          <div class="table-header">
-            <h2>جداول Database</h2>
-          </div>
-          <div id="tables" class="loading">در حال بارگذاری...</div>
-        </div>
-      </div>
-
-      <script>
-        async function loadData() {
-          try {
-            // Load Stats
-            const statsRes = await fetch('/api/stats');
-            const statsData = await statsRes.json();
-            if (statsData.success) {
-              document.getElementById('stats').innerHTML = \`
-                <div class="stat-card">
-                  <h3>تعداد جداول</h3>
-                  <div class="value">\${statsData.tableCount}</div>
-                </div>
-                <div class="stat-card">
-                  <h3>حجم Database</h3>
-                  <div class="value">\${statsData.sizeGB} GB</div>
-                </div>
-              \`;
-            }
-
-            // Load Tables
-            const tablesRes = await fetch('/api/tables');
-            const tablesData = await tablesRes.json();
-            if (tablesData.success) {
-              let html = '<table><thead><tr><th>نام جدول</th><th>تعداد ستون‌ها</th><th>عملیات</th></tr></thead><tbody>';
-              tablesData.tables.forEach(table => {
-                html += \`<tr>
-                  <td>\${table.name}</td>
-                  <td>\${table.columnCount}</td>
-                  <td><button class="btn" onclick="viewTable('\${table.name}')">مشاهده</button></td>
-                </tr>\`;
-              });
-              html += '</tbody></table>';
-              document.getElementById('tables').innerHTML = html;
-            }
-          } catch (error) {
-            document.getElementById('error').innerHTML = '<div class="error">خطا در بارگذاری اطلاعات: ' + error.message + '</div>';
-            console.error('Error:', error);
-          }
-        }
-
-        async function viewTable(tableName) {
-          try {
-            const res = await fetch('/api/table/' + tableName);
-            const data = await res.json();
-            if (data.success) {
-              let html = '<table><thead><tr>';
-              data.columns.forEach(col => {
-                html += '<th>' + col.name + '<br><small>' + col.dataType + '</small></th>';
-              });
-              html += '</tr></thead><tbody>';
-              data.rows.forEach(row => {
-                html += '<tr>';
-                data.columns.forEach(col => {
-                  html += '<td>' + (row[col.name] || '-') + '</td>';
-                });
-                html += '</tr>';
-              });
-              html += '</tbody></table>';
-              
-              document.getElementById('tables').innerHTML = '<div class="table-header"><h2>جدول: ' + tableName + ' (' + data.rowCount + ' رکورد)</h2></div>' + html;
-            }
-          } catch (error) {
-            console.error('Error loading table:', error);
-          }
-        }
-
-        loadData();
-      </script>
-    </body>
-    </html>
-  `);
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Start Server
 app.listen(PORT, () => {
   console.log(`🚀 Database Viewer running on http://localhost:${PORT}`);
+  console.log(`📊 Available at: http://localhost:${PORT}`);
   console.log(`📊 API Endpoints:`);
   console.log(`   GET /health - Health check`);
   console.log(`   GET /api/tables - List all tables`);
